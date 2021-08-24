@@ -1,7 +1,7 @@
 import { useContext } from "react";
 import { ReducerContext } from "./Props";
 import styled from "styled-components";
-
+import { fromJS } from "immutable";
 const fetchChess = (index) => {
   switch (index) {
     case 0:
@@ -112,20 +112,28 @@ const StyledChess = styled.div`
 export const ChessSoldier = ({ value }) => {
   const [state, dispatch] = useContext(ReducerContext);
   const theChess = state.chessPoint.get(value.init);
+  const resetDotStatus = () => {
+    let list = [];
+    state.chessPoint.toJS().map((v) => {
+      return list.push({ ...v, dot: false });
+    });
+    return fromJS(list);
+  };
   const moveFunction = () => {
+    const list = resetDotStatus();
     if (theChess.get("type") === "soldier-black") {
-      const update = state.chessPoint.setIn(
+      const update = list.setIn(
         [value.init - 9, "dot"],
         !state.chessPoint.getIn([value.init - 9, "dot"])
       );
       return update;
     } else if (theChess.get("type") === "soldier-red") {
-      const update = state.chessPoint.setIn(
+      const update = list.setIn(
         [value.init + 9, "dot"],
         !state.chessPoint.getIn([value.init + 9, "dot"])
       );
       return update;
-    } else return state.chessPoint;
+    } else return list;
   };
   return (
     <StyledChess
