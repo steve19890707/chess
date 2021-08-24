@@ -70,14 +70,14 @@ const chessPointCss = (row = 0) => {
 };
 const StyledChess = styled.div`
   position: absolute;
-  z-index: 2;
+  z-index: 3;
   width: 65px;
   height: 65px;
   box-sizing: border-box;
   border: 4px solid transparent;
   background-color: #fff;
   border-radius: 50%;
-  transform: translate(-50%, -50%);
+  transform: translate(calc(-50% + 4px), calc(-50% + 4px));
   cursor: pointer;
   &.black {
     border-color: #000;
@@ -104,22 +104,41 @@ const StyledChess = styled.div`
       font-weight: bold;
       pointer-events: none;
     }
-    .move-line {
-      position: absolute;
-    }
   }
   ${[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((v) => {
     return chessPointCss(v);
   })}
 `;
-// 卒 & 兵
-export const ChessSoldier = ({ init = 0, camp = "" }) => {
+export const ChessSoldier = ({ value }) => {
   const [state, dispatch] = useContext(ReducerContext);
+  const theChess = state.chessPoint.get(value.init);
+  const moveFunction = () => {
+    if (theChess.get("type") === "soldier-black") {
+      const update = state.chessPoint.setIn(
+        [value.init - 9, "dot"],
+        !state.chessPoint.getIn([value.init - 9, "dot"])
+      );
+      return update;
+    } else if (theChess.get("type") === "soldier-red") {
+      const update = state.chessPoint.setIn(
+        [value.init + 9, "dot"],
+        !state.chessPoint.getIn([value.init + 9, "dot"])
+      );
+      return update;
+    } else return state.chessPoint;
+  };
   return (
-    <StyledChess className={`${camp} point-${init}`}>
+    <StyledChess
+      className={`${value.camp} point-${value.init}`}
+      onClick={() => {
+        dispatch({
+          type: "setChessPoint",
+          playload: moveFunction(),
+        });
+      }}
+    >
       <div className="content">
-        <span>{fetchChess(init)}</span>
-        <div className="move-line"></div>
+        <span>{fetchChess(value.init)}</span>
       </div>
     </StyledChess>
   );

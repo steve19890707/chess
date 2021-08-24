@@ -1,6 +1,7 @@
 import { useContext } from "react";
 import { ReducerContext } from "./Props";
 import styled, { createGlobalStyle } from "styled-components";
+import cx from "classnames";
 // components part
 import { ChessBottom } from "./ChessBottom";
 import { ChessSoldier } from "./Chess";
@@ -12,6 +13,23 @@ const GlobalStyle = createGlobalStyle`
     background-color: #303030;
   }
 `;
+const chessPointCss = (row = 0) => {
+  let styles = "";
+  let value = {
+    start: 0 + row * 9,
+    end: 9 + row * 9,
+  };
+  for (let i = value.start; i < value.end; i++) {
+    const currentI = i - row * 9;
+    styles += `
+      &.point-${i} {
+        top: ${row * 100}px;
+        left: ${currentI * 100}px;
+      }
+    `;
+  }
+  return styles;
+};
 const StyledApp = styled.div`
   .area {
     position: relative;
@@ -19,9 +37,26 @@ const StyledApp = styled.div`
     width: 800px;
     height: 900px;
   }
+  .click-dot {
+    display: none;
+    position: absolute;
+    transform: translate(calc(-50% + 4px), calc(-50% + 4px));
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background-color: red;
+    z-index: 2;
+    cursor: pointer;
+    &.active {
+      display: block;
+    }
+    ${[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((v) => {
+      return chessPointCss(v);
+    })}
+  }
 `;
 export const App = () => {
-  const [state, dispatch] = useContext(ReducerContext);
+  const [state] = useContext(ReducerContext);
   const initList = [
     { init: 0, camp: "red" },
     { init: 1, camp: "red" },
@@ -61,8 +96,16 @@ export const App = () => {
       <GlobalStyle />
       <div className="area">
         <ChessBottom />
+        {state.chessPoint.map((v, k) => {
+          return (
+            <div
+              key={k}
+              className={cx(`click-dot point-${k}`, { active: v.get("dot") })}
+            />
+          );
+        })}
         {initList.map((v, k) => {
-          return <ChessSoldier key={k} init={v.init} camp={v.camp} />;
+          return <ChessSoldier key={k} value={v} />;
         })}
       </div>
     </StyledApp>
